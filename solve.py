@@ -100,6 +100,6 @@ def solve(bo):
 def print_board(bo):
     for i in bo:
         print(i)
-    
+
 solve(board)
 print_board(board)
