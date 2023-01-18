@@ -11,7 +11,18 @@ board = [
     [8,0,9,4,7,1,0,2,5]
 ]
 
-def solve(b):
+def can_input(r, c, b, key, val):
+    '''
+    Return True if val can be placed at coordinate key(tuple), else False
+    '''
+    row = key[0]
+    col = key[1]
+    box = ((row // 3) * 3) + (col // 3)
+    if val in r.get(row) or val in c.get(col) or val in b.get(box):
+        return False
+    return True
+
+def solve(bo):
     '''
     Solving the given sudoku board b using the backtracking algorithm
     '''
@@ -22,12 +33,12 @@ def solve(b):
     avail = {}
 
     # Parse through the board
-    for r in range(len(board)):
+    for r in range(len(bo)):
         rows[r] = []
-        for c in range(len(board[0])):
+        for c in range(len(bo[0])):
             if r == 0:
                 columns[c] = []
-            box = ((r // 3) * 3) + ((c // 3) + 1)
+            box = ((r // 3) * 3) + (c // 3)
             if r % 3 == 0 and c % 3 == 0:
                 boxes[box] = []
             
@@ -48,13 +59,47 @@ def solve(b):
             s.add(r)
         for c in columns.get(col):
             s.add(c)
-        box = ((row // 3) * 3) + ((col // 3) + 1)
+        box = ((row // 3) * 3) + (col // 3)
         for b in boxes.get(box):
             s.add(b)
         for n in range(1, 10):
             if n not in s:
                 avail[k].append(n)
-    
-    print(avail)
 
+    avail_spaces = sorted(avail.keys())
+    def place(k_index):
+        '''
+        Place the numbers in available spaces, backtracking when they don't fit
+        '''
+        if k_index == len(avail_spaces):
+            return 0
+        r = avail_spaces[k_index][0]
+        c = avail_spaces[k_index][1]
+        b = ((r // 3) * 3) + (c // 3)
+        found = False
+        for v in avail.get(avail_spaces[k_index]):
+            if can_input(rows, columns, boxes, avail_spaces[k_index], v):
+                rows[r].append(v)
+                columns[c].append(v)
+                boxes[b].append(v)
+                board[r][c] = v
+                res = place(k_index + 1)
+                if res:
+                    rows[r].pop()
+                    columns[c].pop()
+                    boxes[b].pop()
+                    board[r][c] = 0
+                else:
+                    found = True
+        if not found:
+            return 1
+        else:
+            return 0
+    place(0)
+
+def print_board(bo):
+    for i in bo:
+        print(i)
+    
 solve(board)
+print_board(board)
