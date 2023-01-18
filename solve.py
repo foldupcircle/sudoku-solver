@@ -32,7 +32,7 @@ def solve(bo):
     columns = {}
     avail = {}
 
-    # Parse through the board
+    # Parse through the board, storing empty and existing values
     for r in range(len(bo)):
         rows[r] = []
         for c in range(len(bo[0])):
