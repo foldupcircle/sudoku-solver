@@ -1,3 +1,4 @@
+from copy import deepcopy
 
 board = [
     [5,0,0,0,1,6,2,0,0],
@@ -10,6 +11,8 @@ board = [
     [3,1,5,2,9,0,0,6,7],
     [8,0,9,4,7,1,0,2,5]
 ]
+
+original_board = deepcopy(board)
 
 def can_input(r, c, b, key, val):
     '''
@@ -42,7 +45,7 @@ def solve(bo):
             if r % 3 == 0 and c % 3 == 0:
                 boxes[box] = []
             
-            v = board[r][c]
+            v = bo[r][c]
             if v:
                 rows[r].append(v)
                 columns[c].append(v)
@@ -82,13 +85,13 @@ def solve(bo):
                 rows[r].append(v)
                 columns[c].append(v)
                 boxes[b].append(v)
-                board[r][c] = v
+                bo[r][c] = v
                 res = place(k_index + 1)
                 if res:
                     rows[r].pop()
                     columns[c].pop()
                     boxes[b].pop()
-                    board[r][c] = 0
+                    bo[r][c] = 0
                 else:
                     found = True
         if not found:
@@ -96,10 +99,8 @@ def solve(bo):
         else:
             return 0
     place(0)
+    return bo
 
-def print_board(bo):
-    for i in bo:
+def print_board(b):
+    for i in b:
         print(i)
-
-solve(board)
-print_board(board)
