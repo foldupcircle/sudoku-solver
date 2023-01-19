@@ -117,28 +117,25 @@ def print_board(b):
 
 # GUI
 
-WIDTH, HEIGHT = 470, 470
-WIN = pygame.display.set_mode((WIDTH, HEIGHT))
-pygame.display.set_caption('Sudoku')
-
-BLACK = (0, 0, 0)
+BLACK = (20, 20, 20)
 WHITE = (250, 250, 250)
-BLUE = (70, 130, 180)
+BLUE = (30, 144, 255)
 RED = (255, 87, 51)
-GRAY = (128,128,128)
+GRAY = (200, 200, 200)
 
 FPS = 60
 BUFFER = 3
-THICK_LINE = 10
-FONT_SIZE = 35
-BLOCK_SIZE = int(WIDTH / 9)
+THICK_LINE = 4
+FONT_SIZE = 32
 SELECTED = [0, 0]
 SOLVED_BOARD = solve(deepcopy(original_board))
-STRIKES = 0
 
+WIDTH, HEIGHT = (Square.block_width * 9) + (2 * THICK_LINE), (Square.block_height * 9) + (2 * THICK_LINE)
+WIN = pygame.display.set_mode((WIDTH, HEIGHT))
+pygame.display.set_caption('Sudoku')
 
 def draw_sudoku_grid(grid, pos, changed, val=0):
-    WIN.fill(BLACK)
+    WIN.fill(WHITE)
 
     # Checking if a new value has been added
     sq = grid[SELECTED[0]][SELECTED[1]]
@@ -160,11 +157,11 @@ def draw_sudoku_grid(grid, pos, changed, val=0):
     # Printing out the grid
     r_pos = 0
     c_pos = 0
-    font = pygame.font.SysFont('Arial', FONT_SIZE, bold=True)
+    font = pygame.font.SysFont('Calibri', FONT_SIZE, bold=False)
     for x in range(len(grid)):
         if x % 3 == 0 and x < 8 and x > 0:
             r_pos += int(THICK_LINE / 2) - 1
-            pygame.draw.line(WIN, WHITE, (0, r_pos), (WIDTH, r_pos), THICK_LINE)
+            pygame.draw.line(WIN, BLACK, (0, r_pos), (WIDTH, r_pos), THICK_LINE)
             r_pos += int(THICK_LINE / 2) + 1
         c_pos = 0
         for y in range(len(grid[0])):
@@ -174,33 +171,22 @@ def draw_sudoku_grid(grid, pos, changed, val=0):
             if sq.selected:
                 WIN.fill(GRAY, sq.rect)
             else:
-                WIN.fill(BLACK, sq.rect)
-            pygame.draw.rect(WIN, WHITE, sq.rect, 1)
+                WIN.fill(WHITE, sq.rect)
+            pygame.draw.rect(WIN, BLACK, sq.rect, 1)
             if sq.value:
-                text = font.render(str(sq.value), True, WHITE)
+                if not original_board[x][y]:
+                    color = BLUE
+                else:
+                    color = BLACK
+                text = font.render(str(sq.value), True, color)
                 rect = text.get_rect(center=(sq.rect.x + int(Square.block_width / 2), sq.rect.y + int(Square.block_height / 2)))
                 WIN.blit(text, rect)
-            c_pos += 50
+            c_pos += Square.block_height
             if (y + 1) % 3 == 0 and y < 8 and y > 0:
                 c_pos += int(THICK_LINE / 2) - 1
-                pygame.draw.line(WIN, WHITE, (c_pos, 0), (c_pos, HEIGHT), THICK_LINE)
+                pygame.draw.line(WIN, BLACK, (c_pos, 0), (c_pos, HEIGHT), THICK_LINE)
                 c_pos += int(THICK_LINE / 2) + 1
-        r_pos += 50
-
-
-    '''
-    font = pygame.font.SysFont('Arial', FONT_SIZE, bold=True)
-    for r in range(len(bo)):
-        for c in range(len(bo[0])):
-            if bo[r][c] and original_board[r][c]:
-                text = font.render(str(bo[r][c]), True, WHITE)
-                rect = text.get_rect(center=(c * 70 + (BLOCK_SIZE / 2), r * 70 + (BLOCK_SIZE / 2)))
-                WIN.blit(text, rect)
-            elif bo[r][c] and not original_board[r][c]:
-                text = font.render(str(bo[r][c]), True, BLUE)
-                rect = text.get_rect(center=(c * 70 + (BLOCK_SIZE / 2), r * 70 + (BLOCK_SIZE / 2)))
-                WIN.blit(text, rect)
-    '''
+        r_pos += Square.block_width
 
     pygame.display.update()
 
