@@ -152,16 +152,28 @@ def draw_sudoku_grid(grid, pos, changed):
         c_pos = 0
         for y in range(len(grid[0])):
             sq = grid[x][y]
-            if not sq.rect:
+            print(grid[x][y])
+            if sq.rect is None:
                 sq.set_rect(c_pos, r_pos)
+            if sq.selected:
+                WIN.fill(GRAY, sq.rect)
+            else:
+                WIN.fill(BLACK, sq.rect)
             pygame.draw.rect(WIN, WHITE, sq.rect, 1)
             c_pos += 50
-            if (y + 1) % 3 == 0 and y < 8:
+            if (y + 1) % 3 == 0 and y < 8 and y > 0:
                 c_pos += int(THICK_LINE / 2) - 1
                 pygame.draw.line(WIN, WHITE, (c_pos, 0), (c_pos, HEIGHT), THICK_LINE)
                 c_pos += int(THICK_LINE / 2) + 1
         r_pos += 50
 
+    if changed:
+        grid[SELECTED[0]][SELECTED[1]].selected = False
+        x = pos[0] // 52
+        y = pos[1] // 52
+        grid[y][x].selected = True
+        SELECTED[1] = x
+        SELECTED[0] = y
     '''
     if changed:
         SELECTED[0] = pos[0] // 70
@@ -196,18 +208,21 @@ def main():
     changed = False
     bo = original_board
     grid = deepcopy(original_board)
-    print(grid)
     for r in range(len(grid)):
         for c in range(len(grid[0])):
             grid[r][c] = Square(r, c, original_board[r][c])
     while run:
         clock.tick(FPS)
+        changed = False
         keys_pressed = pygame.key.get_pressed()
         if keys_pressed[pygame.K_SPACE]:
             bo = solve(board)
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 run = False
+            if event.type == pygame.MOUSEBUTTONDOWN and pos != pygame.mouse.get_pos():
+                pos = pygame.mouse.get_pos()
+                changed = True
         draw_sudoku_grid(grid, pos, changed)
         pygame.display.update()
     pygame.quit()
