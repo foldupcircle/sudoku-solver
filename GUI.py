@@ -1,5 +1,4 @@
 import pygame
-from pyparsing import col
 from solve import solve, original_board, board, rows_or, columns_or, boxes_or, can_input, parse
 
 WIDTH, HEIGHT = 630, 630
