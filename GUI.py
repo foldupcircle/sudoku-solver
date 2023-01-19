@@ -1,9 +1,10 @@
 import pygame
-from solve import solve, original_board, board
+from pyparsing import col
+from solve import solve, original_board, board, rows_or, columns_or, boxes_or, can_input, parse
 
 WIDTH, HEIGHT = 630, 630
 WIN = pygame.display.set_mode((WIDTH, HEIGHT))
-pygame.display.set_caption('Sudoku Solver')
+pygame.display.set_caption('Sudoku')
 
 BLACK = (0, 0, 0)
 WHITE = (250, 250, 250)
@@ -17,6 +18,7 @@ THINK_LINE = 10
 FONT_SIZE = 40
 BLOCK_SIZE = int(WIDTH / 9)
 SELECTED = [0, 0]
+bo = original_board
 
 def draw_sudoku_grid(bo, pos, changed):
     WIN.fill(BLACK)
@@ -62,13 +64,52 @@ def handle_selected(keys_pressed):
     elif keys_pressed[pygame.K_RIGHT] and SELECTED[0] != 8:
         SELECTED[0] += 1
 
+def handle_inputs(keys_pressed):
+    added = 0
+    c = SELECTED[0]
+    r = SELECTED[1]
+    parse(bo, rows_or, columns_or, boxes_or)
+    if keys_pressed[pygame.K_1] and can_input(rows_or, columns_or, boxes_or, (r, c), 1) and not bo[r][c]:
+        bo[r][c] = 1
+        added = 1
+    elif keys_pressed[pygame.K_2] and can_input(rows_or, columns_or, boxes_or, (r, c), 2) and not bo[r][c]:
+        bo[r][c] = 2
+        added = 2
+    elif keys_pressed[pygame.K_3] and can_input(rows_or, columns_or, boxes_or, (r, c), 3) and not bo[r][c]:
+        bo[r][c] = 3
+        added = 3
+    elif keys_pressed[pygame.K_4] and can_input(rows_or, columns_or, boxes_or, (r, c), 4) and not bo[r][c]:
+        bo[r][c] = 4
+        added = 4
+    elif keys_pressed[pygame.K_5] and can_input(rows_or, columns_or, boxes_or, (r, c), 5) and not bo[r][c]:
+        bo[r][c] = 5
+        added = 5
+    elif keys_pressed[pygame.K_6] and can_input(rows_or, columns_or, boxes_or, (r, c), 6) and not bo[r][c]:
+        bo[r][c] = 6
+        added = 6
+    elif keys_pressed[pygame.K_7] and can_input(rows_or, columns_or, boxes_or, (r, c), 7) and not bo[r][c]:
+        bo[r][c] = 7
+        added = 7
+    elif keys_pressed[pygame.K_8] and can_input(rows_or, columns_or, boxes_or, (r, c), 8) and not bo[r][c]:
+        bo[r][c] = 8
+        added = 8
+    elif keys_pressed[pygame.K_9] and can_input(rows_or, columns_or, boxes_or, (r, c), 9) and not bo[r][c]:
+        bo[r][c] = 9
+        added = 9
+    
+    if added:
+        rows_or[r].append(added)
+        columns_or[c].append(added)
+        b = ((r // 3) * 3) + (c // 3)
+        boxes_or[b].append(added)
+
 def main():
     pygame.init()
     clock = pygame.time.Clock()
     run = True
-    bo = original_board
     pos = 0
     changed = False
+    bo = original_board
     while run:
         clock.tick(FPS)
         keys_pressed = pygame.key.get_pressed()
@@ -82,6 +123,7 @@ def main():
                 changed = True
             else:
                 handle_selected(keys_pressed)
+                handle_inputs(keys_pressed)
                 changed = False
         draw_sudoku_grid(bo, pos, changed)
         pygame.display.update()

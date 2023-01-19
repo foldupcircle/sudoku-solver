@@ -1,5 +1,8 @@
 from copy import deepcopy
 
+rows_or = {}
+columns_or = {}
+boxes_or = {}
 board = [
     [5,0,0,0,1,6,2,0,0],
     [0,0,0,9,8,0,5,0,4],
@@ -25,16 +28,7 @@ def can_input(r, c, b, key, val):
         return False
     return True
 
-def solve(bo):
-    '''
-    Solving the given sudoku board b using the backtracking algorithm
-    '''
-    # Defining Hashmaps to store values while parsing
-    rows = {}
-    boxes = {}
-    columns = {}
-    avail = {}
-
+def parse(bo, rows, columns, boxes, avail={}):
     # Parse through the board, storing empty and existing values
     for r in range(len(bo)):
         rows[r] = []
@@ -68,6 +62,22 @@ def solve(bo):
         for n in range(1, 10):
             if n not in s:
                 avail[k].append(n)
+
+def solve(bo):
+    '''
+    Solving the given sudoku board b using the backtracking algorithm
+    '''
+    # Defining Hashmaps to store values while parsing
+    rows = {}
+    boxes = {}
+    columns = {}
+    avail = {}
+
+    parse(bo, rows, columns, boxes, avail)
+
+    rows_or = deepcopy(rows)
+    columns_or = deepcopy(columns)
+    boxes_or = deepcopy(boxes)
 
     avail_spaces = sorted(avail.keys())
     def place(k_index):
@@ -104,3 +114,6 @@ def solve(bo):
 def print_board(b):
     for i in b:
         print(i)
+
+solve(board)
+print_board(board)
