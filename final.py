@@ -120,7 +120,7 @@ def print_board(b):
 BLACK = (20, 20, 20)
 WHITE = (250, 250, 250)
 BLUE = (30, 144, 255)
-RED = (255, 87, 51)
+RED = (240, 20, 0)
 GRAY = (200, 200, 200)
 
 FPS = 60
@@ -129,7 +129,7 @@ THICK_LINE = 4
 FONT_SIZE = 32
 SELECTED = [0, 0]
 SOLVED_BOARD = solve(deepcopy(original_board))
-GAME_ACTIVE = True
+game_active = True
 
 WIDTH, HEIGHT = (Square.block_width * 9) + (2 * THICK_LINE), (Square.block_height * 9) + (2 * THICK_LINE)
 WIN = pygame.display.set_mode((WIDTH, HEIGHT + 40))
@@ -188,13 +188,13 @@ def draw_sudoku_grid(grid, pos, changed, val=0):
                 pygame.draw.line(WIN, BLACK, (c_pos, 0), (c_pos, HEIGHT), THICK_LINE)
                 c_pos += int(THICK_LINE / 2) + 1
         r_pos += Square.block_width
-    
+
     if Square.strikes > 0 and Square.strikes < 3:
         s = ''
         for _ in range(Square.strikes):
             s += 'X '
         text = font.render(s, True, RED)
-        rect = text.get_rect(center=(20, HEIGHT + 20))
+        rect = text.get_rect(center=(20 + (Square.strikes * 14), HEIGHT + 20))
         WIN.blit(text, rect)
     elif Square.strikes >= 3:
         game_over()
@@ -202,32 +202,32 @@ def draw_sudoku_grid(grid, pos, changed, val=0):
     pygame.display.update()
 
 def game_over():
-    GAME_ACTIVE = False
-    font = pygame.font.SysFont('Calibri', FONT_SIZE * 3, bold=True)
+    game_active = False
+    font = pygame.font.SysFont('Calibri', FONT_SIZE * 2, bold=True)
     text = font.render('Game Over', True, RED)
-    rect = text.get_rect(center=(WIDTH, HEIGHT))
+    rect = text.get_rect(center=(int(WIDTH / 2), int(HEIGHT / 2)))
     WIN.blit(text, rect)
     pygame.display.update()
     
-def handle_inputs(keys_pressed):
+def handle_inputs(event):
     val = 0
-    if keys_pressed[pygame.K_1]:
+    if event.key == pygame.K_1:
         val = 1
-    elif keys_pressed[pygame.K_2]:
+    if event.key == pygame.K_2:
         val = 2
-    elif keys_pressed[pygame.K_3]:
+    if event.key == pygame.K_3:
         val = 3
-    elif keys_pressed[pygame.K_4]:
+    if event.key == pygame.K_4:
         val = 4
-    elif keys_pressed[pygame.K_5]:
+    if event.key == pygame.K_5:
         val = 5
-    elif keys_pressed[pygame.K_6]:
+    if event.key == pygame.K_6:
         val = 6
-    elif keys_pressed[pygame.K_7]:
+    if event.key == pygame.K_7:
         val = 7
-    elif keys_pressed[pygame.K_8]:
+    if event.key == pygame.K_8:
         val = 8
-    elif keys_pressed[pygame.K_9]:
+    if event.key == pygame.K_9:
         val = 9
     return val
 
@@ -242,21 +242,22 @@ def main():
         for c in range(len(grid[0])):
             grid[r][c] = Square(r, c, original_board[r][c])
     while run:
-        if GAME_ACTIVE:
+        if game_active:
             clock.tick(FPS)
             changed = False
+            val = 0
             keys_pressed = pygame.key.get_pressed()
             if keys_pressed[pygame.K_SPACE]:
                 bo = solve(board)
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
                     run = False
-                elif event.type == pygame.MOUSEBUTTONDOWN and pos != pygame.mouse.get_pos():
+                if event.type == pygame.KEYDOWN:
+                    val = handle_inputs(event)
+                if event.type == pygame.MOUSEBUTTONDOWN and pos != pygame.mouse.get_pos():
                     pos = pygame.mouse.get_pos()
                     changed = True
-                else:
-                    val = handle_inputs(keys_pressed)
-
+                    
             draw_sudoku_grid(grid, pos, changed, val)
             pygame.display.update()
     pygame.quit()
