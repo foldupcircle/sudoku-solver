@@ -1,5 +1,6 @@
 from copy import deepcopy
 import pygame
+from square import Square
 
 rows_or = {}
 columns_or = {}
@@ -115,6 +116,77 @@ def solve(bo):
 def print_board(b):
     for i in b:
         print(i)
+         
+#########################################################################
+
+# GUI
+
+WIDTH, HEIGHT = 470, 470
+WIN = pygame.display.set_mode((WIDTH, HEIGHT))
+pygame.display.set_caption('Sudoku')
+
+BLACK = (0, 0, 0)
+WHITE = (250, 250, 250)
+BLUE = (70, 130, 180)
+RED = (255, 87, 51)
+GRAY = (128,128,128)
+
+FPS = 60
+BUFFER = 3
+THICK_LINE = 10
+FONT_SIZE = 40
+BLOCK_SIZE = int(WIDTH / 9)
+SELECTED = [0, 0]
+
+
+
+def draw_sudoku_grid(grid, pos, changed):
+    WIN.fill(BLACK)
+    r_pos = 0
+    c_pos = 0
+    for x in range(len(grid)):
+        if x % 3 == 0 and x < 8 and x > 0:
+            r_pos += int(THICK_LINE / 2) - 1
+            pygame.draw.line(WIN, WHITE, (0, r_pos), (WIDTH, r_pos), THICK_LINE)
+            r_pos += int(THICK_LINE / 2) + 1
+        c_pos = 0
+        for y in range(len(grid[0])):
+            sq = grid[x][y]
+            if not sq.rect:
+                sq.set_rect(c_pos, r_pos)
+            pygame.draw.rect(WIN, WHITE, sq.rect, 1)
+            c_pos += 50
+            if (y + 1) % 3 == 0 and y < 8:
+                c_pos += int(THICK_LINE / 2) - 1
+                pygame.draw.line(WIN, WHITE, (c_pos, 0), (c_pos, HEIGHT), THICK_LINE)
+                c_pos += int(THICK_LINE / 2) + 1
+        r_pos += 50
+
+    '''
+    if changed:
+        SELECTED[0] = pos[0] // 70
+        SELECTED[1] = pos[1] // 70
+    x = SELECTED[0] * 70
+    y = SELECTED[1] * 70
+    rectangle = pygame.Rect(x, y, BLOCK_SIZE, BLOCK_SIZE)
+    WIN.fill(GRAY, rect=rectangle)
+    pygame.draw.rect(WIN, WHITE, rectangle, 1)
+
+    
+    font = pygame.font.SysFont('Arial', FONT_SIZE, bold=True)
+    for r in range(len(bo)):
+        for c in range(len(bo[0])):
+            if bo[r][c] and original_board[r][c]:
+                text = font.render(str(bo[r][c]), True, WHITE)
+                rect = text.get_rect(center=(c * 70 + (BLOCK_SIZE / 2), r * 70 + (BLOCK_SIZE / 2)))
+                WIN.blit(text, rect)
+            elif bo[r][c] and not original_board[r][c]:
+                text = font.render(str(bo[r][c]), True, BLUE)
+                rect = text.get_rect(center=(c * 70 + (BLOCK_SIZE / 2), r * 70 + (BLOCK_SIZE / 2)))
+                WIN.blit(text, rect)
+    '''
+
+    pygame.display.update()
 
 def main():
     pygame.init()
@@ -123,6 +195,11 @@ def main():
     pos = 0
     changed = False
     bo = original_board
+    grid = deepcopy(original_board)
+    print(grid)
+    for r in range(len(grid)):
+        for c in range(len(grid[0])):
+            grid[r][c] = Square(r, c, original_board[r][c])
     while run:
         clock.tick(FPS)
         keys_pressed = pygame.key.get_pressed()
@@ -131,14 +208,7 @@ def main():
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 run = False
-            elif event.type == pygame.MOUSEBUTTONDOWN and pos != pygame.mouse.get_pos():
-                pos = pygame.mouse.get_pos()
-                changed = True
-            else:
-                handle_selected(keys_pressed)
-                handle_inputs(keys_pressed)
-                changed = False
-        draw_sudoku_grid(bo, pos, changed)
+        draw_sudoku_grid(grid, pos, changed)
         pygame.display.update()
     pygame.quit()
 
