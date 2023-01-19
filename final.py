@@ -2,9 +2,9 @@ from copy import deepcopy
 import pygame
 from square import Square
 
-rows_or = {}
-columns_or = {}
-boxes_or = {}
+rows = {}
+columns = {}
+boxes = {}
 board = [
     [5,0,0,0,1,6,2,0,0],
     [0,0,0,9,8,0,5,0,4],
@@ -77,10 +77,6 @@ def solve(bo):
 
     parse(bo, rows, columns, boxes, avail)
 
-    rows_or = deepcopy(rows)
-    columns_or = deepcopy(columns)
-    boxes_or = deepcopy(boxes)
-
     avail_spaces = sorted(avail.keys())
     def place(k_index):
         '''
@@ -134,16 +130,37 @@ GRAY = (128,128,128)
 FPS = 60
 BUFFER = 3
 THICK_LINE = 10
-FONT_SIZE = 40
+FONT_SIZE = 35
 BLOCK_SIZE = int(WIDTH / 9)
 SELECTED = [0, 0]
+SOLVED_BOARD = solve(deepcopy(original_board))
+STRIKES = 0
 
 
-
-def draw_sudoku_grid(grid, pos, changed):
+def draw_sudoku_grid(grid, pos, changed, val=0):
     WIN.fill(BLACK)
+
+    # Checking if a new value has been added
+    sq = grid[SELECTED[0]][SELECTED[1]]
+    if val and not sq.value:
+        if val == SOLVED_BOARD[SELECTED[0]][SELECTED[1]]:
+            sq.value = val
+        else:
+            Square.strikes += 1
+
+    # Check if selected grid spot has changed and make changes accordingly
+    if changed:
+        grid[SELECTED[0]][SELECTED[1]].selected = False
+        x = pos[0] // 52
+        y = pos[1] // 52
+        grid[y][x].selected = True
+        SELECTED[1] = x
+        SELECTED[0] = y
+
+    # Printing out the grid
     r_pos = 0
     c_pos = 0
+    font = pygame.font.SysFont('Arial', FONT_SIZE, bold=True)
     for x in range(len(grid)):
         if x % 3 == 0 and x < 8 and x > 0:
             r_pos += int(THICK_LINE / 2) - 1
@@ -152,7 +169,6 @@ def draw_sudoku_grid(grid, pos, changed):
         c_pos = 0
         for y in range(len(grid[0])):
             sq = grid[x][y]
-            print(grid[x][y])
             if sq.rect is None:
                 sq.set_rect(c_pos, r_pos)
             if sq.selected:
@@ -160,6 +176,10 @@ def draw_sudoku_grid(grid, pos, changed):
             else:
                 WIN.fill(BLACK, sq.rect)
             pygame.draw.rect(WIN, WHITE, sq.rect, 1)
+            if sq.value:
+                text = font.render(str(sq.value), True, WHITE)
+                rect = text.get_rect(center=(sq.rect.x + int(Square.block_width / 2), sq.rect.y + int(Square.block_height / 2)))
+                WIN.blit(text, rect)
             c_pos += 50
             if (y + 1) % 3 == 0 and y < 8 and y > 0:
                 c_pos += int(THICK_LINE / 2) - 1
@@ -167,24 +187,8 @@ def draw_sudoku_grid(grid, pos, changed):
                 c_pos += int(THICK_LINE / 2) + 1
         r_pos += 50
 
-    if changed:
-        grid[SELECTED[0]][SELECTED[1]].selected = False
-        x = pos[0] // 52
-        y = pos[1] // 52
-        grid[y][x].selected = True
-        SELECTED[1] = x
-        SELECTED[0] = y
-    '''
-    if changed:
-        SELECTED[0] = pos[0] // 70
-        SELECTED[1] = pos[1] // 70
-    x = SELECTED[0] * 70
-    y = SELECTED[1] * 70
-    rectangle = pygame.Rect(x, y, BLOCK_SIZE, BLOCK_SIZE)
-    WIN.fill(GRAY, rect=rectangle)
-    pygame.draw.rect(WIN, WHITE, rectangle, 1)
 
-    
+    '''
     font = pygame.font.SysFont('Arial', FONT_SIZE, bold=True)
     for r in range(len(bo)):
         for c in range(len(bo[0])):
@@ -200,13 +204,34 @@ def draw_sudoku_grid(grid, pos, changed):
 
     pygame.display.update()
 
+def handle_inputs(keys_pressed):
+    val = 0
+    if keys_pressed[pygame.K_1]:
+        val = 1
+    elif keys_pressed[pygame.K_2]:
+        val = 2
+    elif keys_pressed[pygame.K_3]:
+        val = 3
+    elif keys_pressed[pygame.K_4]:
+        val = 4
+    elif keys_pressed[pygame.K_5]:
+        val = 5
+    elif keys_pressed[pygame.K_6]:
+        val = 6
+    elif keys_pressed[pygame.K_7]:
+        val = 7
+    elif keys_pressed[pygame.K_8]:
+        val = 8
+    elif keys_pressed[pygame.K_9]:
+        val = 9
+    return val
+
 def main():
     pygame.init()
     clock = pygame.time.Clock()
     run = True
     pos = 0
     changed = False
-    bo = original_board
     grid = deepcopy(original_board)
     for r in range(len(grid)):
         for c in range(len(grid[0])):
@@ -220,10 +245,13 @@ def main():
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 run = False
-            if event.type == pygame.MOUSEBUTTONDOWN and pos != pygame.mouse.get_pos():
+            elif event.type == pygame.MOUSEBUTTONDOWN and pos != pygame.mouse.get_pos():
                 pos = pygame.mouse.get_pos()
                 changed = True
-        draw_sudoku_grid(grid, pos, changed)
+            else:
+                val = handle_inputs(keys_pressed)
+
+        draw_sudoku_grid(grid, pos, changed, val)
         pygame.display.update()
     pygame.quit()
 
