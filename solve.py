@@ -1,4 +1,8 @@
+from copy import deepcopy
 
+rows_or = {}
+columns_or = {}
+boxes_or = {}
 board = [
     [5,0,0,0,1,6,2,0,0],
     [0,0,0,9,8,0,5,0,4],
@@ -11,6 +15,8 @@ board = [
     [8,0,9,4,7,1,0,2,5]
 ]
 
+original_board = deepcopy(board)
+
 def can_input(r, c, b, key, val):
     '''
     Return True if val can be placed at coordinate key(tuple), else False
@@ -22,16 +28,7 @@ def can_input(r, c, b, key, val):
         return False
     return True
 
-def solve(bo):
-    '''
-    Solving the given sudoku board b using the backtracking algorithm
-    '''
-    # Defining Hashmaps to store values while parsing
-    rows = {}
-    boxes = {}
-    columns = {}
-    avail = {}
-
+def parse(bo, rows, columns, boxes, avail={}):
     # Parse through the board, storing empty and existing values
     for r in range(len(bo)):
         rows[r] = []
@@ -42,7 +39,7 @@ def solve(bo):
             if r % 3 == 0 and c % 3 == 0:
                 boxes[box] = []
             
-            v = board[r][c]
+            v = bo[r][c]
             if v:
                 rows[r].append(v)
                 columns[c].append(v)
@@ -66,6 +63,22 @@ def solve(bo):
             if n not in s:
                 avail[k].append(n)
 
+def solve(bo):
+    '''
+    Solving the given sudoku board b using the backtracking algorithm
+    '''
+    # Defining Hashmaps to store values while parsing
+    rows = {}
+    boxes = {}
+    columns = {}
+    avail = {}
+
+    parse(bo, rows, columns, boxes, avail)
+
+    rows_or = deepcopy(rows)
+    columns_or = deepcopy(columns)
+    boxes_or = deepcopy(boxes)
+
     avail_spaces = sorted(avail.keys())
     def place(k_index):
         '''
@@ -82,13 +95,13 @@ def solve(bo):
                 rows[r].append(v)
                 columns[c].append(v)
                 boxes[b].append(v)
-                board[r][c] = v
+                bo[r][c] = v
                 res = place(k_index + 1)
                 if res:
                     rows[r].pop()
                     columns[c].pop()
                     boxes[b].pop()
-                    board[r][c] = 0
+                    bo[r][c] = 0
                 else:
                     found = True
         if not found:
@@ -96,10 +109,11 @@ def solve(bo):
         else:
             return 0
     place(0)
+    return bo
 
-def print_board(bo):
-    for i in bo:
+def print_board(b):
+    for i in b:
         print(i)
-    
+
 solve(board)
 print_board(board)
