@@ -1,7 +1,9 @@
-from copy import deepcopy
 import pygame
+import time
+
+from copy import deepcopy
 from square import Square
-from typing import Optional
+
 
 rows = {}
 columns = {}
@@ -66,7 +68,7 @@ def parse(bo, rows, columns, boxes, avail={}):
             if n not in s:
                 avail[k].append(n)
 
-def solve(bo, grid):
+def solve(bo, grid=False):
     '''
     Solving the given sudoku board b using the backtracking algorithm
     '''
@@ -96,9 +98,9 @@ def solve(bo, grid):
                 boxes[b].append(v)
                 bo[r][c] = v
                 if grid:
-                    print('hi')
                     grid[r][c].value = v
                     draw_sudoku_grid(grid, (0, 0), False, len(avail))
+                    time.sleep(0.05)
                 res = place(k_index + 1)
                 if res:
                     rows[r].pop()
@@ -136,7 +138,7 @@ BUFFER = 3
 THICK_LINE = 4
 FONT_SIZE = 32
 SELECTED = [0, 0]
-SOLVED_BOARD = solve(deepcopy(original_board), False)
+SOLVED_BOARD = solve(deepcopy(original_board))
 game_active = True
 
 
@@ -144,7 +146,7 @@ WIDTH, HEIGHT = (Square.block_width * 9) + (2 * THICK_LINE), (Square.block_heigh
 WIN = pygame.display.set_mode((WIDTH, HEIGHT + 40))
 pygame.display.set_caption('Sudoku')
 
-def draw_sudoku_grid(grid, pos, changed, empty, val=0):
+def draw_sudoku_grid(grid, pos, changed, empty, time=None, val=0):
     WIN.fill(WHITE)
 
     # Checking if a new value has been added
@@ -199,19 +201,33 @@ def draw_sudoku_grid(grid, pos, changed, empty, val=0):
                 c_pos += int(THICK_LINE / 2) + 1
         r_pos += Square.block_width
 
-    if Square.strikes > 0 and Square.strikes < 3:
+    is_solved = False
+    if not empty:
+        solved(time)
+        is_solved = True
+
+    # Handling Strikes
+    if Square.strikes >= 0 and Square.strikes < 3:
         s = ''
         for _ in range(Square.strikes):
             s += 'X '
         text = font.render(s, True, RED)
         rect = text.get_rect(center=(20 + (Square.strikes * 14), HEIGHT + 20))
         WIN.blit(text, rect)
+        
+        # Printing Time
+        if time and not is_solved:
+            text = font.render('Time: ' + str(time) + 's', True, BLACK)
+            rect = text.get_rect(center=(WIDTH * 0.75, HEIGHT + 20))
+            WIN.blit(text, rect)
+
     elif Square.strikes >= 3:
         game_over()
+        is_solved = True
 
-    pygame.display.update()
+    pygame.display.update() 
 
-    return empty
+    return is_solved
 
 def game_over():
     game_active = False
@@ -221,10 +237,10 @@ def game_over():
     WIN.blit(text, rect)
     pygame.display.update()
 
-def solved():
+def solved(time=0):
     game_active = False
-    font = pygame.font.SysFont('Calibri', FONT_SIZE * 2, bold=True)
-    text = font.render('Solved!', True, BLUE)
+    font = pygame.font.SysFont('Calibri', int(FONT_SIZE * 1.5), bold=True)
+    text = font.render('Solved in ' + str(time) + 's', True, BLUE)
     rect = text.get_rect(center=(int(WIDTH / 2), int(HEIGHT / 2)))
     WIN.blit(text, rect)
     pygame.display.update()
@@ -250,30 +266,32 @@ def handle_inputs(event, grid, bo):
     if event.key == pygame.K_9:
         val = 9
     if event.key == pygame.K_SPACE:
-        print('hello')
-        solve(grid, bo)
+        solve(bo, grid)
     return val
 
 def main():
     pygame.init()
-    clock = pygame.time.Clock()
     run = True
     pos = 0
     changed = False
+    start = time.time()
+    global game_active
     grid = deepcopy(original_board)
     empty = 0
+    is_solved = False
     for r in range(len(grid)):
         for c in range(len(grid[0])):
             grid[r][c] = Square(r, c, original_board[r][c])
             if not original_board[r][c]:
                 empty += 1
     print_board(SOLVED_BOARD)
+
     while run:
         if game_active:
-            clock.tick(FPS)
+            if not is_solved:
+                display_time = round(time.time() - start)
             changed = False
             val = 0
-            keys_pressed = pygame.key.get_pressed()
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
                     run = False
@@ -283,10 +301,12 @@ def main():
                     pos = pygame.mouse.get_pos()
                     changed = True
                     
-            empty = draw_sudoku_grid(grid, pos, changed, empty, val)
-            if not empty:
-                solved()
+            is_solved = draw_sudoku_grid(grid, pos, changed, empty, display_time, val)
+            if is_solved:
+                game_active = False
+                print('hello')
             pygame.display.update()
+
     pygame.quit()
 
 if __name__ == '__main__':
