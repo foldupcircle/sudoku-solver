@@ -9,15 +9,15 @@ rows = {}
 columns = {}
 boxes = {}
 board = [
-    [5,0,0,0,1,6,2,0,0],
-    [0,0,0,9,8,0,5,0,4],
-    [0,3,0,0,0,0,0,0,9],
-    [0,0,0,6,0,0,1,0,0],
-    [9,0,6,0,0,0,0,0,2],
-    [0,2,3,0,4,9,0,0,0],
-    [0,4,0,0,0,0,0,8,1],
-    [3,1,5,2,9,0,0,6,7],
-    [8,0,9,4,7,1,0,2,5]
+    [5,9,4,3,1,6,2,7,0],
+    [6,7,1,9,8,0,5,0,4],
+    [2,3,8,7,5,4,6,1,9],
+    [4,8,7,6,2,5,1,9,3],
+    [9,5,6,1,3,7,8,4,2],
+    [1,2,3,8,4,9,7,5,6],
+    [7,4,2,5,6,3,9,8,1],
+    [3,1,5,2,9,8,4,6,7],
+    [8,6,9,4,7,1,3,2,5]
 ]
 
 original_board = deepcopy(board)
@@ -284,7 +284,7 @@ def main():
             grid[r][c] = Square(r, c, original_board[r][c])
             if not original_board[r][c]:
                 empty += 1
-    print_board(SOLVED_BOARD)
+    # print_board(SOLVED_BOARD)
 
     while run:
         if game_active:
@@ -304,7 +304,7 @@ def main():
             is_solved = draw_sudoku_grid(grid, pos, changed, empty, display_time, val)
             if is_solved:
                 game_active = False
-                print('hello')
+                # print('hello')
             pygame.display.update()
 
     pygame.quit()
