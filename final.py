@@ -72,6 +72,7 @@ def solve(bo, grid=False):
     '''
     Solving the given sudoku board b using the backtracking algorithm
     '''
+    start = time.time()
     # Defining Hashmaps to store values while parsing
     rows = {}
     boxes = {}
@@ -99,7 +100,7 @@ def solve(bo, grid=False):
                 bo[r][c] = v
                 if grid:
                     grid[r][c].value = v
-                    draw_sudoku_grid(grid, (0, 0), False, len(avail))
+                    draw_sudoku_grid(grid, (0, 0), False, len(avail), round(time.time() - start))
                     time.sleep(0.05)
                 res = place(k_index + 1)
                 if res:
@@ -109,7 +110,7 @@ def solve(bo, grid=False):
                     bo[r][c] = 0
                     if grid:
                         grid[r][c].value = 0
-                        draw_sudoku_grid(grid, (0, 0), False, len(avail))
+                        draw_sudoku_grid(grid, (0, 0), False, len(avail), round(time.time() - start))
                 else:
                     found = True
         if not found:
@@ -284,7 +285,7 @@ def main():
             grid[r][c] = Square(r, c, original_board[r][c])
             if not original_board[r][c]:
                 empty += 1
-    print_board(SOLVED_BOARD)
+    # print_board(SOLVED_BOARD)
 
     while run:
         if game_active:
@@ -301,10 +302,9 @@ def main():
                     pos = pygame.mouse.get_pos()
                     changed = True
                     
-            is_solved = draw_sudoku_grid(grid, pos, changed, empty, display_time, val)
+            is_solved = draw_sudoku_grid(grid, pos, changed, empty, None, val)
             if is_solved:
                 game_active = False
-                print('hello')
             pygame.display.update()
 
     pygame.quit()
