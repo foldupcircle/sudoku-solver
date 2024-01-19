@@ -285,7 +285,6 @@ def main():
             grid[r][c] = Square(r, c, original_board[r][c])
             if not original_board[r][c]:
                 empty += 1
-    # print_board(SOLVED_BOARD)
 
     while run:
         if game_active:
