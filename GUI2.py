@@ -49,7 +49,8 @@ class GUI:
         # Printing out the grid
         r_pos = 0
         c_pos = 0
-        font = pygame.font.SysFont('Calibri', FONT_SIZE, bold=False)
+        font = pygame.font.SysFont('Calibri', FONT_SIZE, bold=False) # Set Font
+
         for x in range(len(grid)):
             if x % 3 == 0 and x < 8 and x > 0:
                 r_pos += int(THICK_LINE / 2) - 1
@@ -66,7 +67,7 @@ class GUI:
                     WIN.fill(WHITE, sq.rect)
                 pygame.draw.rect(WIN, BLACK, sq.rect, 1)
                 if sq.value:
-                    if not original_board[x][y]:
+                    if not self.solver.original_board[x][y]:
                         color = BLUE
                     else:
                         color = BLACK
@@ -127,6 +128,3 @@ class GUI:
     def handle_inputs(self, event):
         if event.key == pygame.K_SPACE:
             self.solver.solve()
-
-    
-
