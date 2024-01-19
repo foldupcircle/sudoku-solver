@@ -14,7 +14,7 @@ BUFFER = 3
 THICK_LINE = 4
 FONT_SIZE = 32
 SELECTED = [0, 0]
-SOLVED_BOARD = solve(deepcopy(original_board))
+# SOLVED_BOARD = solve(deepcopy(original_board))
 game_active = True
 
 WIDTH, HEIGHT = (Square.block_width * 9) + (2 * THICK_LINE), (Square.block_height * 9) + (2 * THICK_LINE)

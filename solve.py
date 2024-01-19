@@ -6,9 +6,9 @@ from GUI2 import GUI
 class Solver:
     def __init__(self, gui: GUI) -> None:
         self.gui = gui
-        self.rows_or = {}
-        self.columns_or = {}
-        self.boxes_or = {}
+        self.rows = {}
+        self.columns = {}
+        self.boxes = {}
         self.avail = {}
 
         # Sets self.board and returns the number of empty values in the board
@@ -58,33 +58,34 @@ class Solver:
         Returns True if val can be placed at (r, c), else False
         '''
         box = ((r // 3) * 3) + (c // 3)
-        if val in self.rows_or.get(r) or val in self.columns_or.get(c) or val in self.boxes_or.get(box):
+        if val in self.rows.get(r) or val in self.columns.get(c) or val in self.boxes.get(box):
             return False
         return True
 
     def parse(self):
         '''
         Sets:
-        - self.rows_or: {row number: [numbers in row]}
-        - self.columns_or: {column number: [numbers in column]}
-        - self.boxes_or: {box number: [numbers in box]}
+        - self.rows: {row number: [numbers in row]}
+        - self.columns: {column number: [numbers in column]}
+        - self.boxes: {box number: [numbers in box]}
         - self.avail: {(r, c) location: set of values that can go here}
         '''
+
         # Parse through the board, storing empty and existing values
         for r in range(len(self.board)):
-            self.rows_or[r] = [] # Initalizing row array for each row
+            self.rows[r] = [] # Initalizing row array for each row
             for c in range(len(self.board[0])):
                 if r == 0:
-                    self.columns_or[c] = [] # Initalizing column array for each column
+                    self.columns[c] = [] # Initalizing column array for each column
                 box = Solver.get_box_number(r, c)
                 if r % 3 == 0 and c % 3 == 0:
-                    self.boxes_or[box] = [] # Initalizing box array for each box
+                    self.boxes[box] = [] # Initalizing box array for each box
                 
                 v = self.board[r][c].value
                 if v:
-                    self.rows_or[r].append(v)
-                    self.columns_or[c].append(v)
-                    self.boxes_or[box].append(v)
+                    self.rows[r].append(v)
+                    self.columns[c].append(v)
+                    self.boxes[box].append(v)
                 else:
                     self.avail[(r, c)] = []
         
@@ -98,35 +99,55 @@ class Solver:
 
         self.avail.sort()
 
-    def _place(self, rows, columns, boxes, avail_spaces, avail, key_index):
+    def _place(self, key_index):
         '''
         Private function to place the numbers in available spaces, backtracking when they don't fit
         '''
+
+        # Get keys from self.avail
         avail_spaces = sorted(self.avail.keys())
+
+        # Base Case
         if key_index == len(avail_spaces):
             return 0
-        r = avail_spaces[key_index][0]
-        c = avail_spaces[key_index][1]
+
+        # Get row, col, and box of location -> avail_spaces[key_index] returns (r, c)
+        location = avail_spaces[key_index]
+        r = location[0]
+        c = location[1]
         b = Solver.get_box_number(r, c)
+
+        # Go through all values that can go in location
         found = False
-        for v in avail.get(avail_spaces[key_index]):
+        for v in self.avail.get(location):
+
+            # Double check if v can go in location (useful in recursive calls because self.avail is not updated)
             if self.can_input(v):
-                rows[r].append(v)
-                columns[c].append(v)
-                boxes[b].append(v)
-                self.board[r][c] = v
+
+                # Add value into data structures
+                self.rows[r].append(v)
+                self.columns[c].append(v)
+                self.boxes[b].append(v)
                 self.board[r][c].value = v
+                self.empty -= 1
+
                 self.gui.draw_sudoku_grid(self.board, (0, 0), False, len(self.avail), round(time.time() - self.start))
                 time.sleep(0.05)
+
+                # Go to next location and attempt to place value, returns 0 (success) or 1 (fail)
                 res = self._place(key_index + 1)
+
+                # If fail, remove value from all data structures
                 if res:
-                    rows[r].pop()
-                    columns[c].pop()
-                    boxes[b].pop()
+                    self.rows[r].pop()
+                    self.columns[c].pop()
+                    self.boxes[b].pop()
                     self.board[r][c].value = 0
+                    self.empty += 1
                     self.gui.draw_sudoku_grid(self.board, (0, 0), False, len(self.avail), round(time.time() - self.start))
                 else:
                     found = True
+                    break
         if not found:
             return 1
         else:
@@ -134,18 +155,21 @@ class Solver:
 
     def solve(self):
         '''
-        Solving the given sudoku board b using the backtracking algorithm
+        Solving the given sudoku board using the backtracking algorithm
+
+        Returns: 1 for not solved and 0 for solved
         '''
-        rows = deepcopy(self.rows_or)
-        columns = deepcopy(self.columns_or)
-        boxes = deepcopy(self.boxes_or)
-        avail_spaces = sorted(self.avail.keys())
-
         self.start = time.time()
-        self._place(rows, columns, boxes, avail_spaces, 0)
-        self.gui.draw_sudoku_grid(self.board, (0, 0), False, len(self.avail), round(time.time() - self.start))
-        return self.board
 
-    def print_board(self):
+        # Call recursive function
+        res = self._place(0)
+
+        # Draw final result with solve time
+        self.gui.draw_sudoku_grid(self.board, (0, 0), False, len(self.avail), round(time.time() - self.start))
+
+        return res
+
+    def print_board(self): 
+        # TODO
         for i in self.board:
             print(i)
