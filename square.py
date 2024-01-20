@@ -8,7 +8,10 @@ class Square:
     def __init__(self, x, y, val=0):
         self.selected = False
         self.xy = (x, y)
-        self.value = val
+        if val is not None:
+            self.value = val
+        else:
+            self.value = 0
         self.rect = None
 
     def set_rect(self, pixel_x, pixel_y):

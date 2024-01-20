@@ -1,15 +1,16 @@
 import time
 from copy import deepcopy
 from square import Square
-from GUI2 import GUI
+from sudoku import Sudoku
 
 class Solver:
-    def __init__(self, gui: GUI) -> None:
+    def __init__(self, difficulty, gui=None) -> None:
         self.gui = gui
         self.rows = {}
         self.columns = {}
         self.boxes = {}
         self.avail = {}
+        self.difficulty = difficulty
 
         # Sets self.board and returns the number of empty values in the board
         self.empty = self._set_board()
@@ -25,24 +26,14 @@ class Solver:
 
         Returns: number of empty squares in self.board
         '''
-        bo = [
-            [5,0,0,0,1,6,2,0,0],
-            [0,0,0,9,8,0,5,0,4],
-            [0,3,0,0,0,0,0,0,9],
-            [0,0,0,6,0,0,1,0,0],
-            [9,0,6,0,0,0,0,0,2],
-            [0,2,3,0,4,9,0,0,0],
-            [0,4,0,0,0,0,0,8,1],
-            [3,1,5,2,9,0,0,6,7],
-            [8,0,9,4,7,1,0,2,5]
-        ]
+        bo = Sudoku(3).difficulty(self.difficulty)
 
-        self.board = deepcopy(bo)
+        self.board = deepcopy(bo.board)
         empty = 0
-        for r in range(len(bo)):
-            for c in range(len(bo[0])):
-                self.board[r][c] = Square(r, c, bo[r][c])
-                if not bo[r][c]:
+        for r in range(len(bo.board)):
+            for c in range(len(bo.board[0])):
+                self.board[r][c] = Square(r, c, bo.board[r][c])
+                if not bo.board[r][c]:
                     empty += 1
         
         return empty
@@ -57,7 +48,7 @@ class Solver:
         '''
         Returns True if val can be placed at (r, c), else False
         '''
-        box = ((r // 3) * 3) + (c // 3)
+        box = Solver.get_box_number(r, c)
         if val in self.rows.get(r) or val in self.columns.get(c) or val in self.boxes.get(box):
             return False
         return True
@@ -97,8 +88,6 @@ class Solver:
                 if self.can_input(row, col, n):
                     self.avail[k].append(n)
 
-        self.avail.sort()
-
     def _place(self, key_index):
         '''
         Private function to place the numbers in available spaces, backtracking when they don't fit
@@ -122,7 +111,7 @@ class Solver:
         for v in self.avail.get(location):
 
             # Double check if v can go in location (useful in recursive calls because self.avail is not updated)
-            if self.can_input(v):
+            if self.can_input(r, c, v):
 
                 # Add value into data structures
                 self.rows[r].append(v)
@@ -131,7 +120,7 @@ class Solver:
                 self.board[r][c].value = v
                 self.empty -= 1
 
-                self.gui.draw_sudoku_grid(self.board, (0, 0), False, len(self.avail), round(time.time() - self.start))
+                self.gui.draw_sudoku_grid(self.empty, round(time.time() - self.start))
                 time.sleep(0.05)
 
                 # Go to next location and attempt to place value, returns 0 (success) or 1 (fail)
@@ -144,7 +133,7 @@ class Solver:
                     self.boxes[b].pop()
                     self.board[r][c].value = 0
                     self.empty += 1
-                    self.gui.draw_sudoku_grid(self.board, (0, 0), False, len(self.avail), round(time.time() - self.start))
+                    self.gui.draw_sudoku_grid(self.empty, round(time.time() - self.start))
                 else:
                     found = True
                     break
@@ -165,7 +154,7 @@ class Solver:
         res = self._place(0)
 
         # Draw final result with solve time
-        self.gui.draw_sudoku_grid(self.board, (0, 0), False, len(self.avail), round(time.time() - self.start))
+        self.gui.draw_sudoku_grid(self.empty, round(time.time() - self.start))
 
         return res
 
