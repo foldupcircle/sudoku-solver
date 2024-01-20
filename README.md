@@ -8,7 +8,7 @@
 * GUI display with visual representation of algorithm and solve time
 
 ## How to Use
-Run `python main.py` and choose a difficulty level, 1 being the easiest and 3 the hardest.
+Run `python main.py` and choose a difficulty level, 1 being the easiest and 3 the hardest. Once the board is launched, press the space bar to solve.
 
 ## Backtracking Algorithm
 The backtracking algorithm is an improvement of the naive approach. It goes through each empty square, inputs a valid number, and moves on to the next empty square. However, if a square doesn't have any valid numbers, it will "backtrack" to the previous square and try a different solution. This avoids going through solutions that we already know aren't correct
